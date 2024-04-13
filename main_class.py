@@ -3,9 +3,10 @@ from tkinter import ttk
 from ctypes import windll
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-from qiskit import QuantumCircuit, Aer
+from qiskit_aer import Aer
+# from qiskit import QuantumCircuit
 from qiskit.visualization import plot_state_qsphere
-from qiskit.visualization.state_visualization import state_to_latex
+# from qiskit.visualization.state_visualization import state_to_latex
 from statevectors import statevector_easy
 
 windll.shcore.SetProcessDpiAwareness(1)
@@ -20,6 +21,7 @@ class PrepareTheState:
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
         self.dpi = self.root.winfo_fpixels('1i')
 
+        self.statevec_index_easy = 1
         self.create_window()
 
     def on_closing(self):
@@ -169,9 +171,12 @@ class PrepareTheState:
         self.target_qsphere.grid(column=0, row=0, columnspan=2, sticky='nsew', pady=10, padx=(2, 2))
         self.target_qsphere.grid_anchor('center')
 
+        next_button = ttk.Button(self.target_game, text='Next Question', command=self.get_next_statevector)
+        next_button.grid(column=0, row=1, columnspan=2, sticky='nesw', ipadx=20, ipady=5, padx=(450, 450))
+
     def get_statevecs_from_dict(self):
         # Plot initial statevector on the qsphere
-        init_statevec_qsphere = self.plot_qsphere(statevector_easy[1][0])
+        init_statevec_qsphere = self.plot_qsphere(statevector_easy[self.statevec_index_easy][0])
         init_statevec_qsphere.set_size_inches((480 / self.dpi, 480 / self.dpi))
 
         if hasattr(self, 'canvas_init_statevec'):
@@ -182,7 +187,7 @@ class PrepareTheState:
         self.canvas_init_statevec.draw()
 
         # Plot target statevector on the qsphere
-        target_statevec_qsphere = self.plot_qsphere(statevector_easy[1][1])
+        target_statevec_qsphere = self.plot_qsphere(statevector_easy[self.statevec_index_easy][1])
         target_statevec_qsphere.set_size_inches((480 / self.dpi, 480 / self.dpi))
 
         if hasattr(self, 'canvas_tar_statevec'):
@@ -192,12 +197,20 @@ class PrepareTheState:
         self.canvas_tar_statevec.get_tk_widget().grid(row=0, column=0, sticky="nsew", padx=5, pady=5)
         self.canvas_tar_statevec.draw()
 
+    def get_next_statevector(self):
+        # Get the next state vector from the state vector.py based on the difficulty chosen
+        try:
+            self.statevec_index_easy = list(statevector_easy.keys())[self.statevec_index_easy]
+            self.get_statevecs_from_dict()
+        except:
+            tk.messagebox.showinfo("Good Job!!", f"You have prepared all the quantum state vectors")
+
 
 
 
     def cartoon_game_panel(self):
         lab_image = tk.Canvas(self.target_game, height=600, relief='sunken', borderwidth=3)
-        lab_image.grid(column=1, row=1, columnspan=3, sticky='sew', pady=10, padx=(2, 2))
+        lab_image.grid(column=1, row=2, columnspan=2, sticky='sew', pady=10, padx=(2, 2))
 
         red_PC = tk.PhotoImage(file="Room_with_red_PC.gif")
         lab_image.create_image(350, 300, image=red_PC, anchor='center')
