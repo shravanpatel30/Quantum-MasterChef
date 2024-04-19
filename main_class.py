@@ -4,9 +4,11 @@ from ctypes import windll
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from qiskit_aer import Aer
+from qiskit.compiler import transpile
 # from qiskit import QuantumCircuit
 from qiskit.visualization import plot_state_qsphere
 # from qiskit.visualization.state_visualization import state_to_latex
+from qiskit.quantum_info import Statevector
 from statevectors import statevector_easy
 
 windll.shcore.SetProcessDpiAwareness(1)
@@ -16,11 +18,14 @@ class PrepareTheState:
     def __init__(self, root):
         self.root = root
         self.root.title("Quantum Escape the Room")
-        # self.root.geometry("1000x900")
-        # self.root.resizable(0,0)
+        # self.root.geometry("1620x1210")
+        self.root.resizable(0,0)
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
         self.dpi = self.root.winfo_fpixels('1i')
 
+        self.design_dpi = 143.858407079646
+
+        self.root.tk.call('tk', 'scaling', self.dpi / 72)
         self.statevec_index_easy = 1
         self.create_window()
 
@@ -29,7 +34,7 @@ class PrepareTheState:
         self.root.destroy()
 
     def create_window(self):
-        self.rules_code = ttk.Frame(self.root, padding=(3, 3, 12, 12))
+        self.rules_code = ttk.Notebook(self.root, padding=(10, 10, 12, 12))
         self.rules_code.grid(column=0, row=0, sticky='nsew')
 
         self.target_game = ttk.Frame(self.root, padding=(3, 3, 12, 12))
@@ -40,44 +45,47 @@ class PrepareTheState:
         self.create_initial_target_qsphere_panel()
         self.get_statevecs_from_dict()
 
-        self.cartoon_game_panel()
+        # self.cartoon_game_panel()
 
     def create_rules_panel(self):
         rules = ttk.Frame(self.rules_code, borderwidth=5)
         rules.grid(column=0, row=0, sticky='nsew')
 
-        rule_heading = ttk.LabelFrame(self.rules_code, text='How to play this game:')
-        rule_heading.grid(column=0, row=0, sticky='new', columnspan=2, pady=(10, 5), padx=(10, 2))
-        ttk.Label(rule_heading, text='Use your keyboard to move close to the door.').grid(column=0, row=0, sticky='nsw', columnspan=2)
-        ttk.Label(rule_heading, text='Create the quantum circuit which gives you the target state').grid(column=0, row=1, sticky='nsw', columnspan=2)
-        rules.columnconfigure('all', weight=1)
+        self.rules_code.add(rules, text=' Instructions ', padding=2)
+
+        rule_heading = ttk.LabelFrame(rules, text='How to play this game:')
+        rule_heading.grid(column=0, row=0, sticky='new', pady=(10, 5), padx=(10, 2))
+        ttk.Label(rule_heading, text='Use your keyboard to move close to the door.').grid(column=0, row=0, sticky='nsw')
+        ttk.Label(rule_heading, text='Create the quantum circuit which gives you the target state').grid(column=0, row=1, sticky='nsw')
 
     def create_player_code_panel(self):
-        code = ttk.Frame(self.rules_code)
-        code.grid(column=0, row=1, sticky='news')
-        code.columnconfigure('all', weight=1)
+        self.code = tk.Frame(self.rules_code)
+        self.code.grid(column=0, row=1, sticky='news')
 
-        ttk.Label(code, text='Build your quantum circuit below', font='TkHeadingFont', padding=(20, 1, 1, 5)).grid(column=0, row=0, sticky='news')
+        self.rules_code.add(self.code, text=' Code Here ', padding=2)
 
-        self.code_text = tk.Text(code, width=40, height=10)
-        self.code_text.grid(column=0, row=1, sticky='new', columnspan=2, padx=(10, 2))
+        self.text_heading = ttk.Label(self.code, text='Build your quantum circuit below:', font='TkHeadingFont', padding=(5, 10, 1, 5))
+        self.text_heading.grid(column=0, row=0, sticky='news')
 
-        button_frame = ttk.Frame(code, width=500)
-        button_frame.grid(column=0, row=2, sticky='new', columnspan=2, padx=(10, 2))
+        self.code_text = tk.Text(self.code, width=40, height=10)
+        self.code_text.grid(column=0, row=1, sticky='new', columnspan=2, padx=(4, 4))
 
-        simulate_button = ttk.Button(button_frame, text='Simulate', command=self.simulate)
+        self.button_frame = tk.Frame(self.code, width=500)
+        self.button_frame.grid(column=0, row=2, sticky='new', columnspan=2, padx=(4, 4))
+
+        simulate_button = ttk.Button(self.button_frame, text='Simulate', command=self.simulate)
         simulate_button.grid(column=0, row=0, padx=(70, 70))
 
-        check_button = ttk.Button(button_frame, text='Check!')
+        check_button = ttk.Button(self.button_frame, text='Check!', command=self.check_statevectors)
         check_button.grid(column=1, row=0, padx=(70, 70))
 
-        self.plot_area = tk.Canvas(code, width=500, height=300, relief="sunken", borderwidth=3)
-        self.plot_area.grid(column=0, row=3, columnspan=2, sticky='nsew', pady=10, padx=(10, 2))
+        self.plot_area = tk.Canvas(self.code, width=500, height=300, relief="sunken", borderwidth=3, background='grey95')
+        self.plot_area.grid(column=0, row=3, columnspan=2, sticky='nsew', pady=10, padx=(4, 4))
         self.plot_area.grid_anchor('center')
         self.plot_area.grid_propagate(False)
 
-        self.player_state = tk.Canvas(code, width=500, height=500, relief="sunken", borderwidth=3)
-        self.player_state.grid(column=0, row=4, columnspan=2, sticky='nsew', pady=(1, 5), padx=(10, 2))
+        self.player_state = tk.Canvas(self.code, width=500, height=500, relief="sunken", borderwidth=3, background='grey95')
+        self.player_state.grid(column=0, row=4, columnspan=2, sticky='nsew', pady=(1, 5), padx=(4, 4))
         self.player_state.grid_anchor('center')
         self.player_state.grid_propagate(False)
 
@@ -89,7 +97,7 @@ class PrepareTheState:
             exec(self.user_code, globals(), local_namespace)
             figure = plt.gcf()
             figure.tight_layout()
-            figure.set_size_inches((480 / self.dpi, 290 / self.dpi))
+            figure.set_size_inches((480 / self.dpi, 280 / self.dpi))
 
             if hasattr(self, 'canvas'):
                 self.canvas.get_tk_widget().destroy()
@@ -99,8 +107,8 @@ class PrepareTheState:
             self.canvas.draw()
 
             # Write the state vector in LaTeX format
-            qcir = local_namespace.get(f'{self.find_quantumcircuit_variable(self.user_code)}')
-            player_state = self.run_circuit(qcir)
+            self.qcir = local_namespace.get(f'{self.find_quantumcircuit_variable(self.user_code)}')
+            player_state = self.run_circuit(self.qcir)
             qsph = self.plot_qsphere(player_state)
 
 
@@ -109,7 +117,7 @@ class PrepareTheState:
             # self.display_statevector(player_state_latex)
             # state = plt.gcf()
 
-            qsph.set_size_inches((480 / self.dpi, 480 / self.dpi))
+            qsph.set_size_inches((480 / self.dpi, 470 / self.dpi))
 
             if hasattr(self, 'canvas1'):
                 self.canvas1.get_tk_widget().destroy()
@@ -123,7 +131,7 @@ class PrepareTheState:
 
 
     def plot_qsphere(self, statevec):
-        qsphere = plot_state_qsphere(statevec)
+        qsphere = plot_state_qsphere(statevec, show_state_phases=True)
         qsphere.tight_layout()
 
         # Adjust font size for all text elements in the qsphere
@@ -141,7 +149,8 @@ class PrepareTheState:
 
     def run_circuit(self, qc):
         simulator = Aer.get_backend('statevector_simulator')
-        job = simulator.run(qc, shots=10)
+        qc = transpile(qc, backend=simulator)
+        job = simulator.run(qc, shots=1024)
         player_state = job.result().get_statevector()
         return player_state
 
@@ -152,6 +161,31 @@ class PrepareTheState:
         ax.text(0.5, 0.5, tmptext, fontsize=10, horizontalalignment='center', verticalalignment='center', transform=ax.transAxes)
         ax.axis('off')
 
+    def check_statevectors(self):
+        try:
+            sv1 = self.run_circuit(self.qcir)
+            sv2 = statevector_easy[self.statevec_index_easy][1]
+
+            # if Statevector(sv1).equiv(sv2):
+            #     self.code.config(background='green2')
+            #     self.text_heading.config(background='green2')
+            #     self.button_frame.config(background='green2')
+
+            if Statevector(sv1).equiv(sv2):
+                self.plot_area.configure(background='green2')
+                self.player_state.configure(background='green2')
+            else:
+                self.plot_area.configure(background='orange red')
+                self.player_state.configure(background='orange red')
+
+            return Statevector(sv1).equiv(sv2)
+
+        except:
+            tk.messagebox.showinfo("Attention", "No quantum circuit found!")
+
+
+
+
     def create_initial_target_qsphere_panel(self):
         # Initial statevector as a qsphere
         initial = ttk.LabelFrame(self.target_game, text='Initial statevector qsphere plot')
@@ -161,6 +195,7 @@ class PrepareTheState:
         self.initial_qsphere = tk.Canvas(initial, width=500, height=500, relief="sunken", borderwidth=3)
         self.initial_qsphere.grid(column=0, row=0, columnspan=2, sticky='nsew', pady=10, padx=(2, 2))
         self.initial_qsphere.grid_anchor('center')
+        self.initial_qsphere.grid_propagate(False)
 
         # Target statevector as a qsphere that the player needs to prepare
         target = ttk.LabelFrame(self.target_game, text='Target statevector qsphere plot')
@@ -170,6 +205,7 @@ class PrepareTheState:
         self.target_qsphere = tk.Canvas(target, width=500, height=500, relief="sunken", borderwidth=3)
         self.target_qsphere.grid(column=0, row=0, columnspan=2, sticky='nsew', pady=10, padx=(2, 2))
         self.target_qsphere.grid_anchor('center')
+        self.target_qsphere.grid_propagate(False)
 
         next_button = ttk.Button(self.target_game, text='Next Question', command=self.get_next_statevector)
         next_button.grid(column=0, row=1, columnspan=2, sticky='nesw', ipadx=20, ipady=5, padx=(450, 450))
@@ -198,22 +234,30 @@ class PrepareTheState:
         self.canvas_tar_statevec.draw()
 
     def get_next_statevector(self):
-        # Get the next state vector from the state vector.py based on the difficulty chosen
-        try:
-            self.statevec_index_easy = list(statevector_easy.keys())[self.statevec_index_easy]
-            self.get_statevecs_from_dict()
-        except:
-            tk.messagebox.showinfo("Good Job!!", f"You have prepared all the quantum state vectors")
+        if self.check_statevectors():
+            # Reset the color of canvases
+            self.plot_area.configure(background='grey95')
+            self.player_state.configure(background='grey95')
+
+            # Get the next state vector from the statevectors.py based on the difficulty chosen
+            try:
+                self.statevec_index_easy += 1 #list(statevector_easy.keys())[self.statevec_index_easy]
+                self.get_statevecs_from_dict()
+            except:
+                tk.messagebox.showinfo("Good Job!!", f"You have prepared all the quantum state vectors")
+
+        else:
+            tk.messagebox.showinfo("Can't proceed!", "Prepare the given target state before proceeding.")
 
 
 
 
-    def cartoon_game_panel(self):
-        lab_image = tk.Canvas(self.target_game, height=600, relief='sunken', borderwidth=3)
-        lab_image.grid(column=1, row=2, columnspan=2, sticky='sew', pady=10, padx=(2, 2))
-
-        red_PC = tk.PhotoImage(file="Room_with_red_PC.gif")
-        lab_image.create_image(350, 300, image=red_PC, anchor='center')
+    # def cartoon_game_panel(self):
+    #     lab_image = tk.Canvas(self.target_game, height=300, relief='sunken', borderwidth=3)
+    #     lab_image.grid(column=1, row=2, sticky='sew', pady=10, padx=(2, 2))
+    #
+    #     red_PC = tk.PhotoImage(file="Room_with_red_PC.gif")
+    #     lab_image.create_image(350, 300, image=red_PC, anchor='center')
 
 
 
