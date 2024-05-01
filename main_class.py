@@ -1,11 +1,13 @@
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk, font
+from tkinter.font import Font
 from ctypes import windll
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from qiskit_aer import Aer
 from qiskit.compiler import transpile
 from qiskit import QuantumCircuit
+from qiskit.quantum_info import state_fidelity
 from qiskit.visualization import plot_state_qsphere
 # from qiskit.visualization.state_visualization import state_to_latex
 from qiskit.quantum_info import Statevector
@@ -23,7 +25,8 @@ class PrepareTheState:
         # self.root.geometry("1620x1210")
         self.root.geometry('+300+100')
         self.root.resizable(0, 0)
-        # tk.font.nametofont('TkDefaultFont').configure(family='DejaVu Sans', size=10)
+        # tk.font.nametofont('TkDefaultFont').configure(family='Comic Sans MS', size=9, weight=font.NORMAL)
+        self.StatusFont = Font(family='Segoe UI', size=12, weight=font.NORMAL)
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
 
         self.dpi = self.root.winfo_fpixels('1i')
@@ -34,7 +37,7 @@ class PrepareTheState:
         self.statevec_index_easy = 1
         self.statevec_index_advanced = 1
         self.statevector_advanced = self.advanced_mode_statevector_dict()
-
+        self.show_hint = False
         self.create_window()
 
     def on_closing(self):
@@ -52,8 +55,8 @@ class PrepareTheState:
         self.create_player_code_panel()
         self.create_initial_target_qsphere_panel()
         self.get_statevecs_from_dict()
-
-        # self.cartoon_game_panel()
+        self.status_panel()
+        self.hints_panel()
 
     def create_rules_panel(self):
         rules = ttk.Frame(self.rules_code, borderwidth=5)
@@ -64,7 +67,7 @@ class PrepareTheState:
         rule_heading = ttk.LabelFrame(rules, text='How to play this game:')
         rule_heading.grid(column=0, row=0, sticky='new', pady=(10, 5), padx=(10, 2))
         ttk.Label(rule_heading, text='Use your keyboard to move close to the door.').grid(column=0, row=0, sticky='nsw')
-        ttk.Label(rule_heading, text='Create the quantum circuit which gives you the target state').grid(column=0, row=1, sticky='nsw')
+        ttk.Label(rule_heading, text='Create the quantum circuit which gives you the target state', wraplength=550).grid(column=0, row=1, sticky='nsw')
 
     def create_player_code_panel(self):
         self.code = tk.Frame(self.rules_code)
@@ -75,11 +78,11 @@ class PrepareTheState:
         self.text_heading = ttk.Label(self.code, text='Build your quantum circuit below:', padding=(5, 10, 1, 5))
         self.text_heading.grid(column=0, row=0, sticky='news')
 
-        self.code_text = tk.Text(self.code, width=40, height=10)
-        self.code_text.grid(column=0, row=1, sticky='new', columnspan=2, padx=(4, 4))
+        self.code_text = tk.Text(self.code, width=40, height=10, wrap='word')
+        self.code_text.grid(column=0, row=1, sticky='nsew', padx=(4, 4))
 
         self.button_frame = tk.Frame(self.code, width=500)
-        self.button_frame.grid(column=0, row=2, sticky='new', columnspan=2, padx=(4, 4))
+        self.button_frame.grid(column=0, row=2, sticky='nsew', columnspan=2, padx=(4, 4))
 
         simulate_button = ttk.Button(self.button_frame, text='Simulate', command=self.simulate)
         simulate_button.grid(column=0, row=0, padx=(70, 70))
@@ -154,9 +157,15 @@ class PrepareTheState:
             self.canvas1.get_tk_widget().grid(row=0, column=0, sticky="nsew", padx=5, pady=5)
             self.canvas1.draw()
 
+            self.player_circuit_depth.configure(text=f'Player Circuit Depth: {self.qcir_display.depth()}')
+
+            if self.choice.get() == 'easy':
+                self.statevec_fidelity.configure(text=f'State fidelity: {state_fidelity(self.run_circuit(self.qcir_display), statevector_easy[self.statevec_index_easy][1], validate=False)}')
+            if self.choice.get() == 'advanced':
+                self.statevec_fidelity.configure(text=f'State fidelity: {state_fidelity(self.run_circuit(self.qcir_display), self.statevector_advanced[self.statevec_index_advanced][1], validate=False)}')
+
         except Exception as e:
             tk.messagebox.showerror("Error", f"An error occurred: {str(e)}")
-
 
     def plot_qsphere(self, statevec):
         qsphere = plot_state_qsphere(statevec, show_state_phases=True)
@@ -258,14 +267,17 @@ class PrepareTheState:
         radio_button_frame = ttk.Frame(self.target_game, relief='groove', borderwidth=3)
         radio_button_frame.grid(column=0, row=0, columnspan=2, sticky='nsew', padx=(5, 5), pady=(5, 2))
 
+        radio_button_frame.columnconfigure(0, weight=1)
+        radio_button_frame.columnconfigure(1, weight=1)
+
         self.choice = tk.StringVar()
         self.choice.set(value='easy')
 
         easy = ttk.Radiobutton(radio_button_frame, text='Easy/Practice mode', variable=self.choice, value='easy', command=self.on_radio_button_change)
-        easy.grid(column=0, row=0, sticky='nsew', padx=(150, 150), pady=(5, 5))
+        easy.grid(column=0, row=0, sticky='ew', padx=(150, 0), pady=(5, 5))
 
         difficult = ttk.Radiobutton(radio_button_frame, text='Advanced mode', variable=self.choice, value='advanced', command=self.on_radio_button_change)
-        difficult.grid(column=1, row=0, sticky='nsew', padx=(200, 150), pady=(5, 5))
+        difficult.grid(column=1, row=0, sticky='ew', padx=(150, 0), pady=(5, 5))
 
         # Initial statevector as a qsphere
         initial = ttk.LabelFrame(self.target_game, text='Initial statevector qsphere plot')
@@ -288,7 +300,69 @@ class PrepareTheState:
         self.target_qsphere.grid_propagate(False)
 
         next_button = ttk.Button(self.target_game, text='Next Question', command=self.get_next_statevector)
-        next_button.grid(column=0, row=2, columnspan=2, ipadx=20, ipady=5, padx=(400, 400))
+        next_button.grid(column=0, row=2, columnspan=2, ipadx=20, ipady=5)
+        next_button.grid_anchor('center')
+
+    def status_panel(self):
+        # self.target_game.rowconfigure(3, weight=1)  # Set equal weights to rows 3 and 4
+        # self.target_game.rowconfigure(4, weight=1)
+
+        # Canvas that indicates progress and status
+        status = ttk.Labelframe(self.target_game, text='Status panel')
+        status.grid(column=0, row=3, columnspan=4, pady=(0, 5), sticky='new')
+
+        # Add weight to the columns and rows
+        status.columnconfigure(0, weight=1)
+        status.rowconfigure(0, weight=1)
+
+        status_frame = ttk.Frame(status, height=210, relief='sunken', borderwidth=5)
+        status_frame.grid(column=0, row=0, padx=(2, 0), sticky='nsew')
+        status_frame.grid_propagate(False)
+
+        status_frame.columnconfigure([0, 1], weight=1)
+        status_frame.rowconfigure([0, 1], weight=1)
+
+        # progress_image = tk.PhotoImage(file='/icons/progress.png')
+        self.problem_num_easy = ttk.Label(status_frame, text=f'Easy Questions Progress: {self.statevec_index_easy} of {len(statevector_easy)}', font=self.StatusFont)
+        self.problem_num_easy.grid(column=0, row=0, sticky='nsew', padx=(20, 10))
+
+        self.problem_num_advanced = ttk.Label(status_frame, text=f'Advanced Questions Progress: {self.statevec_index_advanced} of {len(self.statevector_advanced)}', font=self.StatusFont)
+        self.problem_num_advanced.grid(column=0, row=1, sticky='nsew', padx=(20, 10))
+
+        self.statevec_fidelity = ttk.Label(status_frame, text=f'State fidelity: 0', font=self.StatusFont)
+        self.statevec_fidelity.grid(column=1, row=0, sticky='nsew', padx=(10, 10))
+
+        self.player_circuit_depth = ttk.Label(status_frame, text=f'Player Circuit Depth: 0', font=self.StatusFont)
+        self.player_circuit_depth.grid(column=1, row=1, sticky='nsew', padx=(10, 10))
+
+
+
+    def hints_panel(self):
+        # Canvas that displays hints
+        hints = ttk.Labelframe(self.target_game, height=250, text='If you want a hint!')
+        hints.grid(column=0, row=4, columnspan=4, pady=(20, 5), sticky='nsew')
+        hints.grid_propagate(False)
+
+        # Add weight to the columns and rows
+        hints.columnconfigure(0, weight=1)
+        hints.rowconfigure(0, weight=1)
+
+        # Create a button in the "Hints" frame
+        self.hint_button = tk.Button(hints, text='Click here to reveal the hint', command=self.toggle_hint, font=self.StatusFont, wraplength=1000)
+        self.hint_button.grid(column=0, row=0, sticky='nsew', padx=(5, 5), pady=(0, 2))  # Make the button occupy the whole space
+        # print(font.families())
+
+    def toggle_hint(self):
+        if not self.show_hint:  # Check if the button is visible
+            if self.choice.get() == 'easy':
+                self.hint_button.configure({'text': statevector_easy[self.statevec_index_easy][2] + str('. Click here again to hide the hint!')})
+                self.show_hint = not self.show_hint
+            if self.choice.get() == 'advanced':
+                self.hint_button.configure({'text': self.statevector_advanced[self.statevec_index_advanced][2] + str('. Click here again to hide the hint!')})
+                self.show_hint = not self.show_hint
+        else:
+            self.hint_button.configure({'text': 'Click here to reveal the hint'})
+            self.show_hint = not self.show_hint
 
     def on_radio_button_change(self):
         # Reset current question solved when changing from easy to advanced
@@ -297,15 +371,19 @@ class PrepareTheState:
             if self.previous_choice == 'easy':
                 # Allow switching to the first advanced question
                 self.get_statevecs_from_dict()
+
+                if self.show_hint:
+                    self.hint_button.invoke()
             self.previous_choice = 'advanced'
 
         elif self.choice.get() == 'easy':
             # Handle switching from advanced to easy
             if self.previous_choice == 'advanced':
                 self.get_statevecs_from_dict()
-            self.previous_choice = 'easy'
 
-        # self.get_statevecs_from_dict()  # Reload the appropriate statevectors
+                if self.show_hint:
+                    self.hint_button.invoke()
+            self.previous_choice = 'easy'
 
     def get_statevecs_from_dict(self):
         if self.choice.get() == 'easy':
@@ -365,15 +443,17 @@ class PrepareTheState:
                 try:
                     self.statevec_index_easy += 1
                     self.get_statevecs_from_dict()
+
+                    self.problem_num_easy.configure(text=f'Easy Questions Progress: {self.statevec_index_easy} of {len(statevector_easy)}')
+
+                    if self.show_hint:
+                        self.hint_button.invoke()
                 except:
                     tk.messagebox.showinfo("Good Job!!", f"You have prepared all the quantum state vectors")
 
             else:
                 tk.messagebox.showinfo("Can't proceed!", "Prepare the given target state before proceeding.")
 
-        # if self.choice.get() == 'advanced' and self.statevec_index_advanced == 1:
-        #     self.get_statevecs_from_dict()
-        #     self.statevec_index_advanced += 1
         if self.choice.get() == 'advanced':
             if self.check_statevectors():
                 # Reset the color of canvases
@@ -384,12 +464,16 @@ class PrepareTheState:
                 try:
                     self.statevec_index_advanced += 1
                     self.get_statevecs_from_dict()
+
+                    self.problem_num_advanced.configure(text=f'Advanced Questions Progress: {self.statevec_index_advanced} of {len(self.statevector_advanced)}')
+
+                    if self.show_hint:
+                        self.hint_button.invoke()
                 except:
                     tk.messagebox.showinfo("Good Job!!", f"You have prepared all the quantum state vectors")
 
             else:
                 tk.messagebox.showinfo("Can't proceed!", "Prepare the given target state before proceeding.")
-
 
     def advanced_mode_statevector_dict(self):
         number_of_questions = 5

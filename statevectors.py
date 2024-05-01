@@ -10,10 +10,10 @@ from qiskit.circuit.exceptions import CircuitError
 # This is the list of statevectors in a dictionary format {"1" : [initial state, final state, hints]} for easy mode,
 # feel free to change this to teach or practice on how to read qspheres and how to think about quantum state vectors
 
-statevector_easy = {1: [Statevector.from_label('11'), Statevector([1. + 0.j, 0. + 0.j, 0. + 0.j, 0. + 0.j], dims=(2, 2)), 'You just have to flip the state of both qubits.'],
+statevector_easy = {1: [Statevector.from_label('11'), Statevector([1. + 0.j, 0. + 0.j, 0. + 0.j, 0. + 0.j], dims=(2, 2)), 'You just have to flip the state of both qubits'],
                     2: [Statevector.from_label('00'), Statevector([0.70710678 + 0.j, 0. + 0.j, 0. + 0.j, 0.70710678 + 0.j], dims=(2, 2)), 'This state is also referred as Φ+. Use H and CX gates'],
                     3: [Statevector.from_label('00'), Statevector([0.70710678 - 8.65956056e-17j, 0. + 0.00e+00j, 0. + 0.00e+00j, -0.70710678 + 8.65956056e-17j], dims=(2, 2)),
-                        'This state is also referred as Φ-. Same as first Bell state but with a negative phase!'],
+                        'This state is also referred as Φ-. Same as first Bell state but with a negative phase'],
                     4: [Statevector.from_label('00'), Statevector([0. + 0.j, 0.70710678 + 0.j, 0.70710678 + 0.j, 0. + 0.j], dims=(2, 2)), 'This state is also referred as Ψ+. Use H, CX and X gates'],
                     5: [Statevector.from_label('00'), Statevector([0. + 0.j, 0.70710678 - 0.j, -0.70710678 + 0.j, -0. + 0.j], dims=(2, 2)),
                         'This state is also referred as Ψ-. This state just has a phase compared to Ψ+'],
@@ -22,11 +22,11 @@ statevector_easy = {1: [Statevector.from_label('11'), Statevector([1. + 0.j, 0. 
                     7: [Statevector.from_label('10'), Statevector([0.70710678 + 0.j, 0. - 0.j, -0. + 0.j, -0.70710678 + 0.j], dims=(2, 2)),
                         'Make sure you have initialized your quantum circuit to the given state. Think in terms of Bell states'],
                     8: [Statevector.from_label('01'), Statevector([0.00e+00 - 0.j, 8.65956056e-17 + 0.70710678j, -8.65956056e-17 - 0.70710678j, 0.00e+00 - 0.j], dims=(2, 2)),
-                        'Make sure you have initialized your quantum circuit to the given state.Think about how you will introduce a phase.'],
+                        'Make sure you have initialized your quantum circuit to the given state.Think about how you will introduce a phase'],
                     9: [Statevector.from_label('000'), Statevector([0.70710678 + 0.j, 0. + 0.j, 0. + 0.j, 0. + 0.j, 0. + 0.j, 0. + 0.j, 0. + 0.j, 0.70710678 + 0.j], dims=(2, 2, 2)),
-                        'This state is commonly named as GHZ state.You will need an extra cx gate compared to Bell states.'],
+                        'This state is commonly named as GHZ state.You will need an extra cx gate compared to Bell states'],
                     10: [Statevector.from_label('10r'), Statevector([0. + 0.j, 0. + 0.j, 0. + 0.j, 0.5 - 0.5j, 0.5 + 0.5j, 0. + 0.j, 0. + 0.j, 0. + 0.j], dims=(2, 2, 2)),
-                         'This state is related to GHZ state. Try to think how you will get the phases.']
+                         'This state is related to GHZ state. Try to think how you will get the phases']
                     }
 
 """Custom utility function for generating random circuits."""
