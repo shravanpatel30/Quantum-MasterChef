@@ -31,7 +31,7 @@ class PrepareTheState:
 
         self.dpi = self.root.winfo_fpixels('1i')
         self.design_dpi = 143.858407079646
-        self.root.tk.call('tk', 'scaling', self.dpi / 72)
+        # self.root.tk.call('tk', 'scaling', self.dpi / 72)
 
         self.previous_choice = 'easy'  # Keep track of the previous mode
         self.statevec_index_easy = 1
@@ -78,17 +78,25 @@ class PrepareTheState:
         self.text_heading = ttk.Label(self.code, text='Build your quantum circuit below:', padding=(5, 10, 1, 5))
         self.text_heading.grid(column=0, row=0, sticky='news')
 
-        self.code_text = tk.Text(self.code, width=40, height=10, wrap='word')
-        self.code_text.grid(column=0, row=1, sticky='nsew', padx=(4, 4))
+        text_frame = ttk.Frame(self.code, width=510, height=215)
+        text_frame.grid(column=0, row=1, columnspan=2)
 
-        self.button_frame = tk.Frame(self.code, width=500)
-        self.button_frame.grid(column=0, row=2, sticky='nsew', columnspan=2, padx=(4, 4))
+        text_frame.columnconfigure(0, weight=10)
+        text_frame.grid_propagate(False)
 
-        simulate_button = ttk.Button(self.button_frame, text='Simulate', command=self.simulate)
-        simulate_button.grid(column=0, row=0, padx=(70, 70))
+        self.code_text = tk.Text(text_frame, wrap='word')
+        self.code_text.grid(column=0, row=0, sticky='nsew', padx=(4, 4))
 
-        check_button = ttk.Button(self.button_frame, text='Check!', command=self.check_statevectors)
-        check_button.grid(column=1, row=0, padx=(70, 70))
+        button_frame = tk.Frame(self.code, width=500)
+        button_frame.grid(column=0, row=2, columnspan=2, sticky='nsew', padx=(4, 4))
+
+        button_frame.columnconfigure([0, 1], weight=1)
+
+        simulate_button = ttk.Button(button_frame, text='Simulate', command=self.simulate)
+        simulate_button.grid(column=0, row=0)
+
+        check_button = ttk.Button(button_frame, text='Check!', command=self.check_statevectors)
+        check_button.grid(column=1, row=0)
 
         self.plot_area = tk.Canvas(self.code, width=500, height=300, relief="sunken", borderwidth=3, background='grey95')
         self.plot_area.grid(column=0, row=3, columnspan=2, sticky='nsew', pady=10, padx=(4, 4))
@@ -212,11 +220,6 @@ class PrepareTheState:
                         sv1 = self.run_circuit(self.qcir_display)
                         sv2 = statevector_easy[self.statevec_index_easy][1]
 
-                        # if Statevector(sv1).equiv(sv2):
-                        #     self.code.config(background='green2')
-                        #     self.text_heading.config(background='green2')
-                        #     self.button_frame.config(background='green2')
-
                         if Statevector(sv1).equiv(sv2):
                             self.plot_area.configure(background='green2')
                             self.player_state.configure(background='green2')
@@ -242,11 +245,6 @@ class PrepareTheState:
                     try:
                         sv1 = self.run_circuit(self.qcir_display)
                         sv2 = self.statevector_advanced[self.statevec_index_advanced][1]
-
-                        # if Statevector(sv1).equiv(sv2):
-                        #     self.code.config(background='green2')
-                        #     self.text_heading.config(background='green2')
-                        #     self.button_frame.config(background='green2')
 
                         if Statevector(sv1).equiv(sv2):
                             self.plot_area.configure(background='green2')
