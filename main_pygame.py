@@ -82,11 +82,18 @@ class PrepareTheState:
         text_frame = ttk.Frame(self.code, width=510*scale, height=215*scale)
         text_frame.grid(column=0, row=1, columnspan=2)
 
-        text_frame.columnconfigure(0, weight=10)
-        text_frame.grid_propagate(False)
+        text_frame.columnconfigure(0, weight=9)
+        text_frame.columnconfigure(1, weight=1)
+        text_frame.rowconfigure(0, weight=10)
 
         self.code_text = tk.Text(text_frame, wrap='word')
-        self.code_text.grid(column=0, row=0, sticky='nsew', padx=(4*scale, 4*scale))
+        self.code_text.grid(column=0, row=0, sticky='nsew', padx=(4*scale, 0))
+
+        scrollb = ttk.Scrollbar(text_frame, orient='vertical', command=self.code_text.yview)
+        scrollb.grid(column=3, row=0, sticky='nsew')
+        self.code_text.configure(yscrollcommand=scrollb.set)
+
+        text_frame.grid_propagate(False)
 
         button_frame = tk.Frame(self.code, width=500*scale)
         button_frame.grid(column=0, row=2, columnspan=2, sticky='nsew', padx=(4*scale, 4*scale))
@@ -138,7 +145,7 @@ class PrepareTheState:
 
             figure = plt.gcf()
             figure.tight_layout()
-            figure.set_size_inches((480*scale / self.dpi, 280*scale / self.dpi))
+            figure.set_size_inches((470*scale / self.dpi, 280*scale / self.dpi))
 
             if hasattr(self, 'canvas'):
                 self.canvas.get_tk_widget().destroy()
@@ -157,7 +164,7 @@ class PrepareTheState:
             # self.display_statevector(player_state_latex)
             # state = plt.gcf()
 
-            qsph.set_size_inches((480*scale / self.dpi, 470*scale / self.dpi))
+            qsph.set_size_inches((470*scale / self.dpi, 470*scale / self.dpi))
 
             if hasattr(self, 'canvas1'):
                 self.canvas1.get_tk_widget().destroy()
@@ -224,9 +231,19 @@ class PrepareTheState:
                         if Statevector(sv1).equiv(sv2):
                             self.plot_area.configure(background='green2')
                             self.player_state.configure(background='green2')
+                            self.status_frame.configure(background='green2')
+                            self.problem_num_easy.configure(background='green2')
+                            self.problem_num_advanced.configure(background='green2')
+                            self.statevec_fidelity.configure(background='green2')
+                            self.player_circuit_depth.configure(background='green2')
                         else:
-                            self.plot_area.configure(background='orange red')
-                            self.player_state.configure(background='orange red')
+                            self.plot_area.configure(background='indianred1')
+                            self.player_state.configure(background='indianred1')
+                            self.status_frame.configure(background='indianred1')
+                            self.problem_num_easy.configure(background='indianred1')
+                            self.problem_num_advanced.configure(background='indianred1')
+                            self.statevec_fidelity.configure(background='indianred1')
+                            self.player_circuit_depth.configure(background='indianred1')
 
                         return Statevector(sv1).equiv(sv2)
                     except:
@@ -250,9 +267,19 @@ class PrepareTheState:
                         if Statevector(sv1).equiv(sv2):
                             self.plot_area.configure(background='green2')
                             self.player_state.configure(background='green2')
+                            self.status_frame.configure(background='green2')
+                            self.problem_num_easy.configure(background='green2')
+                            self.problem_num_advanced.configure(background='green2')
+                            self.statevec_fidelity.configure(background='green2')
+                            self.player_circuit_depth.configure(background='green2')
                         else:
-                            self.plot_area.configure(background='orange red')
-                            self.player_state.configure(background='orange red')
+                            self.plot_area.configure(background='indianred1')
+                            self.player_state.configure(background='indianred1')
+                            self.status_frame.configure(background='indianred1')
+                            self.problem_num_easy.configure(background='indianred1')
+                            self.problem_num_advanced.configure(background='indianred1')
+                            self.statevec_fidelity.configure(background='indianred1')
+                            self.player_circuit_depth.configure(background='indianred1')
 
                         return Statevector(sv1).equiv(sv2)
                     except:
@@ -314,24 +341,24 @@ class PrepareTheState:
         status.columnconfigure(0, weight=1)
         status.rowconfigure(0, weight=1)
 
-        status_frame = ttk.Frame(status, height=210*scale, relief='sunken', borderwidth=5*scale)
-        status_frame.grid(column=0, row=0, padx=(2*scale, 0), sticky='nsew')
-        status_frame.grid_propagate(False)
+        self.status_frame = tk.Frame(status, height=210*scale, relief='sunken', borderwidth=3*scale)
+        self.status_frame.grid(column=0, row=0, padx=(2*scale, 0), sticky='nsew')
+        self.status_frame.grid_propagate(False)
 
-        status_frame.columnconfigure([0, 1], weight=1)
-        status_frame.rowconfigure([0, 1], weight=1)
+        self.status_frame.columnconfigure([0, 1], weight=1)
+        self.status_frame.rowconfigure([0, 1], weight=1)
 
         # progress_image = tk.PhotoImage(file='/icons/progress.png')
-        self.problem_num_easy = ttk.Label(status_frame, text=f'Easy Questions Progress: {self.statevec_index_easy} of {len(statevector_easy)}', font=self.StatusFont)
+        self.problem_num_easy = ttk.Label(self.status_frame, text=f'Easy Questions Progress: {self.statevec_index_easy} of {len(statevector_easy)}', font=self.StatusFont)
         self.problem_num_easy.grid(column=0, row=0, sticky='nsew', padx=(20*scale, 10*scale))
 
-        self.problem_num_advanced = ttk.Label(status_frame, text=f'Advanced Questions Progress: {self.statevec_index_advanced} of {len(self.statevector_advanced)}', font=self.StatusFont)
+        self.problem_num_advanced = ttk.Label(self.status_frame, text=f'Advanced Questions Progress: {self.statevec_index_advanced} of {len(self.statevector_advanced)}', font=self.StatusFont)
         self.problem_num_advanced.grid(column=0, row=1, sticky='nsew', padx=(20*scale, 10*scale))
 
-        self.statevec_fidelity = ttk.Label(status_frame, text=f'State fidelity: 0', font=self.StatusFont)
+        self.statevec_fidelity = ttk.Label(self.status_frame, text=f'State fidelity: 0', font=self.StatusFont)
         self.statevec_fidelity.grid(column=1, row=0, sticky='nsew', padx=(10*scale, 10*scale))
 
-        self.player_circuit_depth = ttk.Label(status_frame, text=f'Player Circuit Depth: 0', font=self.StatusFont)
+        self.player_circuit_depth = ttk.Label(self.status_frame, text=f'Player Circuit Depth: 0', font=self.StatusFont)
         self.player_circuit_depth.grid(column=1, row=1, sticky='nsew', padx=(10*scale, 10*scale))
 
 
