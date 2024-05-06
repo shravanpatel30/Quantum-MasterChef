@@ -7,32 +7,128 @@ from qiskit.circuit import Reset
 from qiskit.circuit.library import standard_gates
 from qiskit.circuit.exceptions import CircuitError
 
-# This is the list of statevectors in a dictionary format {"1" : [initial state, final state, hints]} for easy mode,
-# feel free to change this to teach or practice on how to read qspheres and how to think about quantum state vectors
+'''
+This is the list of statevectors in a dictionary format {"1" : [initial statevector, final statevector, hints]} for easy mode,
+feel free to change this to teach or practice on how to read qspheres and how to think about quantum state vectors
+'''
 
-statevector_easy = {1: [Statevector.from_label('11'), Statevector([1. + 0.j, 0. + 0.j, 0. + 0.j, 0. + 0.j], dims=(2, 2)), 'You just have to flip the state of both qubits'],
-                    2: [Statevector.from_label('00'), Statevector([0.70710678 + 0.j, 0. + 0.j, 0. + 0.j, 0.70710678 + 0.j], dims=(2, 2)), 'This state is also referred as Φ+. Use H and CX gates'],
-                    3: [Statevector.from_label('00'), Statevector([0.70710678 - 8.65956056e-17j, 0. + 0.00e+00j, 0. + 0.00e+00j, -0.70710678 + 8.65956056e-17j], dims=(2, 2)),
-                        'This state is also referred as Φ-. Same as first Bell state but with a negative phase'],
-                    4: [Statevector.from_label('00'), Statevector([0. + 0.j, 0.70710678 + 0.j, 0.70710678 + 0.j, 0. + 0.j], dims=(2, 2)), 'This state is also referred as Ψ+. Use H, CX and X gates'],
-                    5: [Statevector.from_label('00'), Statevector([0. + 0.j, 0.70710678 - 0.j, -0.70710678 + 0.j, -0. + 0.j], dims=(2, 2)),
-                        'This state is also referred as Ψ-. This state just has a phase compared to Ψ+'],
-                    6: [Statevector.from_label('11'), Statevector([0. + 0.00e+00j, -0.70710678 + 8.65956056e-17j, 0.70710678 - 8.65956056e-17j, 0. + 0.00e+00j], dims=(2, 2)),
-                        'Make sure you have initialized your quantum circuit to the given state. Think in terms of Bell states'],
-                    7: [Statevector.from_label('10'), Statevector([0.70710678 + 0.j, 0. - 0.j, -0. + 0.j, -0.70710678 + 0.j], dims=(2, 2)),
-                        'Make sure you have initialized your quantum circuit to the given state. Think in terms of Bell states'],
-                    8: [Statevector.from_label('01'), Statevector([0.00e+00 - 0.j, 8.65956056e-17 + 0.70710678j, -8.65956056e-17 - 0.70710678j, 0.00e+00 - 0.j], dims=(2, 2)),
-                        'Make sure you have initialized your quantum circuit to the given state.Think about how you will introduce a phase'],
-                    9: [Statevector.from_label('000'), Statevector([0.70710678 + 0.j, 0. + 0.j, 0. + 0.j, 0. + 0.j, 0. + 0.j, 0. + 0.j, 0. + 0.j, 0.70710678 + 0.j], dims=(2, 2, 2)),
-                        'This state is commonly named as GHZ state.You will need an extra cx gate compared to Bell states'],
-                    10: [Statevector.from_label('10r'), Statevector([0. + 0.j, 0. + 0.j, 0. + 0.j, 0.5 - 0.5j, 0.5 + 0.5j, 0. + 0.j, 0. + 0.j, 0. + 0.j], dims=(2, 2, 2)),
-                         'This state is related to GHZ state. Try to think how you will get the phases']
-                    }
+statevector_easy = {
+    1: [
+        Statevector.from_label("11"),
+        Statevector([1.0 + 0.0j, 0.0 + 0.0j, 0.0 + 0.0j, 0.0 + 0.0j], dims=(2, 2)),
+        "You just have to flip the state of both qubits",
+    ],
+    2: [
+        Statevector.from_label("00"),
+        Statevector(
+            [0.70710678 + 0.0j, 0.0 + 0.0j, 0.0 + 0.0j, 0.70710678 + 0.0j], dims=(2, 2)
+        ),
+        "This state is also referred as Φ+. Use H and CX gates",
+    ],
+    3: [
+        Statevector.from_label("00"),
+        Statevector(
+            [
+                0.70710678 - 8.65956056e-17j,
+                0.0 + 0.00e00j,
+                0.0 + 0.00e00j,
+                -0.70710678 + 8.65956056e-17j,
+            ],
+            dims=(2, 2),
+        ),
+        "This state is also referred as Φ-. Same as first Bell state but with a negative phase",
+    ],
+    4: [
+        Statevector.from_label("00"),
+        Statevector(
+            [0.0 + 0.0j, 0.70710678 + 0.0j, 0.70710678 + 0.0j, 0.0 + 0.0j], dims=(2, 2)
+        ),
+        "This state is also referred as Ψ+. Use H, CX and X gates",
+    ],
+    5: [
+        Statevector.from_label("00"),
+        Statevector(
+            [0.0 + 0.0j, 0.70710678 - 0.0j, -0.70710678 + 0.0j, -0.0 + 0.0j],
+            dims=(2, 2),
+        ),
+        "This state is also referred as Ψ-. This state just has a phase compared to Ψ+",
+    ],
+    6: [
+        Statevector.from_label("11"),
+        Statevector(
+            [
+                0.0 + 0.00e00j,
+                -0.70710678 + 8.65956056e-17j,
+                0.70710678 - 8.65956056e-17j,
+                0.0 + 0.00e00j,
+            ],
+            dims=(2, 2),
+        ),
+        "Make sure you have initialized your quantum circuit to the given state. Think in terms of Bell states",
+    ],
+    7: [
+        Statevector.from_label("10"),
+        Statevector(
+            [0.70710678 + 0.0j, 0.0 - 0.0j, -0.0 + 0.0j, -0.70710678 + 0.0j],
+            dims=(2, 2),
+        ),
+        "Make sure you have initialized your quantum circuit to the given state. Think in terms of Bell states",
+    ],
+    8: [
+        Statevector.from_label("01"),
+        Statevector(
+            [
+                0.00e00 - 0.0j,
+                8.65956056e-17 + 0.70710678j,
+                -8.65956056e-17 - 0.70710678j,
+                0.00e00 - 0.0j,
+            ],
+            dims=(2, 2),
+        ),
+        "Make sure you have initialized your quantum circuit to the given state.Think about how you will introduce a phase",
+    ],
+    9: [
+        Statevector.from_label("000"),
+        Statevector(
+            [
+                0.70710678 + 0.0j,
+                0.0 + 0.0j,
+                0.0 + 0.0j,
+                0.0 + 0.0j,
+                0.0 + 0.0j,
+                0.0 + 0.0j,
+                0.0 + 0.0j,
+                0.70710678 + 0.0j,
+            ],
+            dims=(2, 2, 2),
+        ),
+        "This state is commonly named as GHZ state.You will need an extra cx gate compared to Bell states",
+    ],
+    10: [
+        Statevector.from_label("10r"),
+        Statevector(
+            [
+                0.0 + 0.0j,
+                0.0 + 0.0j,
+                0.0 + 0.0j,
+                0.5 - 0.5j,
+                0.5 + 0.5j,
+                0.0 + 0.0j,
+                0.0 + 0.0j,
+                0.0 + 0.0j,
+            ],
+            dims=(2, 2, 2),
+        ),
+        "This state is related to GHZ state. Try to think how you will get the phases",
+    ],
+}
 
 """Custom utility function for generating random circuits."""
 
 
-def random_circuit(num_qubits, depth, max_operands=2, seed=None, initial_state: Statevector = None):
+def random_circuit(
+    num_qubits, depth, max_operands=2, seed=None, initial_state: Statevector = None
+):
     if num_qubits == 0:
         return QuantumCircuit()
     if max_operands < 1 or max_operands > 4:
@@ -104,14 +200,15 @@ def random_circuit(num_qubits, depth, max_operands=2, seed=None, initial_state: 
     if max_operands >= 4:
         gates.extend(gates_4q)
     gates = np.array(
-        gates, dtype=[("class", object), ("num_qubits", np.int64), ("num_params", np.int64)]
+        gates,
+        dtype=[("class", object), ("num_qubits", np.int64), ("num_params", np.int64)],
     )
     gates_1q = np.array(gates_1q, dtype=gates.dtype)
 
     qc = QuantumCircuit(num_qubits)
 
     if initial_state is None:
-        qc.initialize(Statevector.from_label('0' * num_qubits))
+        qc.initialize(Statevector.from_label("0" * num_qubits))
     else:
         qc.initialize(initial_state)
 
@@ -148,17 +245,22 @@ def random_circuit(num_qubits, depth, max_operands=2, seed=None, initial_state: 
         np.cumsum(gate_specs["num_qubits"], out=q_indices[1:])
         np.cumsum(gate_specs["num_params"], out=p_indices[1:])
         # parameters = rng.uniform(0, 2 * np.pi, size=p_indices[-1])
-        parameters = rng.choice(np.arange(0, 2 * np.pi + np.pi / 4, np.pi / 4), size=p_indices[-1])
+        parameters = rng.choice(
+            np.arange(0, 2 * np.pi + np.pi / 4, np.pi / 4), size=p_indices[-1]
+        )
         rng.shuffle(qubits)
 
         # We've now generated everything we're going to need.  Now just to add everything.
         for gate, q_start, q_end, p_start, p_end in zip(
-                gate_specs["class"], q_indices[:-1], q_indices[1:], p_indices[:-1], p_indices[1:]
+            gate_specs["class"],
+            q_indices[:-1],
+            q_indices[1:],
+            p_indices[:-1],
+            p_indices[1:],
         ):
             operation = gate(*parameters[p_start:p_end])
-            qc.append(CircuitInstruction(operation=operation, qubits=qubits[q_start:q_end]))
+            qc.append(
+                CircuitInstruction(operation=operation, qubits=qubits[q_start:q_end])
+            )
 
     return qc
-
-# q = random_circuit(2, 2, max_operands=4, initial_state=None)
-# print(q)
