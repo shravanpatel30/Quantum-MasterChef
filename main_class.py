@@ -14,6 +14,7 @@ from qiskit.quantum_info import Statevector
 from statevectors import statevector_easy, random_circuit
 import numpy as np
 import random
+import textwrap
 
 windll.shcore.SetProcessDpiAwareness(1)
 
@@ -22,12 +23,10 @@ class PrepareTheState:
     def __init__(self, root):
         self.root = root
         self.root.title('Quantum Master Chef')
-        # self.root.iconbitmap('quantum_masterchef_icon.ico')
-        # self.root.iconphoto(False, tk.PhotoImage(file='quantum_masterchef.png'))
         # self.root.geometry("1620x1210")
         self.root.geometry('+300+100')
         self.root.resizable(0, 0)
-        # tk.font.nametofont('TkDefaultFont').configure(family='Verdana', size=9, weight=font.NORMAL)
+        tk.font.nametofont('TkDefaultFont').configure(family='Verdana', size=9, weight=font.NORMAL)
         self.StatusFont = Font(family='Verdana', size=12, weight=font.NORMAL)
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
 
@@ -60,6 +59,7 @@ class PrepareTheState:
         self.get_statevecs_from_dict()
         self.status_panel()
         self.hints_panel()
+        self.root.iconbitmap('logo_small.ico')
 
     def create_rules_panel(self):
         rules = ttk.Frame(self.rules_code, borderwidth=5*scale)
@@ -67,10 +67,50 @@ class PrepareTheState:
 
         self.rules_code.add(rules, text=' Instructions ', padding=2*scale)
 
-        rule_heading = ttk.LabelFrame(rules, text='How to play this game:')
-        rule_heading.grid(column=0, row=0, sticky='new', pady=(10*scale, 5*scale), padx=(10*scale, 2*scale))
-        ttk.Label(rule_heading, text='Use your keyboard to move close to the door.').grid(column=0, row=0, sticky='nsw')
-        ttk.Label(rule_heading, text='Create the quantum circuit which gives you the target state', wraplength=550*scale).grid(column=0, row=1, sticky='nsw')
+        instructions = ('''
+         - On the right side you are given the initial ingredient (initial statevector) and the final dish (target statevector).
+        
+         - Your goal as a Quantum Chef is to prepare a quantum recipie (quantum circuit) that will use the initial ingredient to prepare the final dish.
+         
+         - The QSphere plots are interactive so you can rotate them for visual clarity.
+        
+         - Below is an example of how you can prepare a recipie:
+        
+        
+         from qiskit import QuantumCircuit
+         from qiskit.quantum_info import Statevector
+        
+         qc = QuantumCircuit(2)
+         qc.initialize(Statevector.from_label('11'))
+         qc.x([0,1])
+         qc.draw('mpl')
+        
+        
+         - After you have a trial recipie (circuit), press the 'Simulate' button first. This will show you how your circuit looks and the final statevector that is prepared using your recipie.
+        
+         - Once you have simulated your recipie, you can go ahead and press the 'Check' button to compare your final statevector with the given final statevector.
+        ''')
+
+        deindented_instructions = textwrap.dedent(instructions)
+
+        how_to_play = tk.LabelFrame(rules,  text='How to play the game:', pady=2*scale, padx=10*scale)
+        how_to_play.grid(column=0, row=0, sticky='nsew')
+        ttk.Label(how_to_play, text=deindented_instructions, wraplength=490 * scale, justify='left', anchor='w').grid(column=0, row=0, sticky='nsew')
+
+        important_points = ('''
+        - Only use .draw('mpl') at the end of your quantum circuit so that the game displays your quantum circuit without problems.
+        
+        - Make sure you use only .initialize() method to initialize your circuit (this is the best way to initialize the circuit).
+        
+        - For advanced mode, you might want to first build a circuit just for the initial state and then extract the Statevector from that circuit and use it in the final circuit (make sure you only use .draw('mpl') once).
+        ''')
+
+        deindented_imp_points = textwrap.dedent(important_points)
+
+        imp_points = tk.LabelFrame(rules, text='Important points to remember:', padx=10*scale)
+        imp_points.grid(column=0, row=1, sticky='nsew', pady=(10*scale, 5*scale))
+        ttk.Label(imp_points, text=deindented_imp_points, wraplength=490 * scale, justify='left', anchor='w').grid(column=0, row=0, sticky='nsew')
+
 
     def create_player_code_panel(self):
         self.code = tk.Frame(self.rules_code)
@@ -261,10 +301,10 @@ class PrepareTheState:
                             self.player_circuit_depth.configure(background='indianred1')
 
                         return Statevector(sv1).equiv(sv2)
-                    except:
+                    except ValueError:
                         tk.messagebox.showinfo("Can't proceed!", "Prepare the given target statevector before proceeding.")
 
-            except:
+            except ValueError:
                 tk.messagebox.showinfo("Attention", "No quantum circuit found!")
 
         if self.choice.get() == 'advanced':
@@ -297,10 +337,10 @@ class PrepareTheState:
                             self.player_circuit_depth.configure(background='indianred1')
 
                         return Statevector(sv1).equiv(sv2)
-                    except:
+                    except ValueError:
                         tk.messagebox.showinfo("Can't proceed!", "Prepare the given target statevector before proceeding.")
 
-            except:
+            except ValueError:
                 tk.messagebox.showinfo("Attention", "No quantum circuit found!")
 
     def create_initial_target_qsphere_panel(self):
@@ -321,7 +361,7 @@ class PrepareTheState:
         difficult.grid(column=1, row=0, sticky='ew', padx=(150*scale, 0), pady=(5*scale, 5*scale))
 
         # Initial statevector as a qsphere
-        initial = ttk.LabelFrame(self.target_game, text='Initial statevector qsphere plot')
+        initial = ttk.LabelFrame(self.target_game, text='Initial statevector QSphere plot')
         initial.grid(column=0, row=1, sticky='nsw', pady=(10*scale, 5*scale))
         initial.columnconfigure('all', weight=1)
 
@@ -331,7 +371,7 @@ class PrepareTheState:
         self.initial_qsphere.grid_propagate(False)
 
         # Target statevector as a qsphere that the player needs to prepare
-        target = ttk.LabelFrame(self.target_game, text='Target statevector qsphere plot')
+        target = ttk.LabelFrame(self.target_game, text='Target statevector QSphere plot')
         target.grid(column=1, row=1, pady=(10*scale, 5*scale), padx=(5*scale, 5*scale))
         target.columnconfigure('all', weight=1)
 
@@ -497,7 +537,7 @@ class PrepareTheState:
 
                     if self.show_hint:
                         self.hint_button.invoke()
-                except:
+                except IndexError:
                     tk.messagebox.showinfo("Good Job!!", f"You have prepared all the quantum state vectors")
 
             else:
@@ -518,7 +558,7 @@ class PrepareTheState:
 
                     if self.show_hint:
                         self.hint_button.invoke()
-                except:
+                except IndexError:
                     tk.messagebox.showinfo("Good Job!!", f"You have prepared all the quantum state vectors")
 
             else:

@@ -1,0 +1,20 @@
+How to play the game:
+- On the right side you are given the initial ingredient (initial statevector) and the final dish (target statevector).
+- Your goal as a Quantum Chef is to prepare a quantum recipie (quantum circuit) that will use the initial ingredient to prepare the final dish.
+- Below is an example of how you can prepare a recipie:
+
+from qiskit import QuantumCircuit
+from qiskit.quantum_info import Statevector
+
+qc = QuantumCircuit(2)
+qc.initialize(Statevector.from_label('11'))
+qc.x([0,1])
+qc.draw('mpl')
+
+-After you have a trial recipie (circuit), press the 'Simulate' button first. This will show you how your circuit looks and the final statevector that is prepared using your recipie.
+-Once you have simulated your recipie, you can go ahead and press the 'Check' button to compare your final statevector with the given final statevector.
+
+Important points to remember:
+-Only use .draw('mpl') at the end of your quantum circuit so that the game displays your quantum circuit without problems.
+-Make sure you use only .initialize() method to initialize your circuit (this is the best way to initialize the circuit).
+
