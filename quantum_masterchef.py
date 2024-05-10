@@ -67,6 +67,8 @@ class PrepareTheState:
         self.hints_panel()
         self.root.iconbitmap("logo_small.ico")
 
+        self.qcir_init = QuantumCircuit(1, name="init")
+
     def create_rules_panel(self):
         rules = ttk.Frame(self.rules_code, borderwidth=5 * scale)
         rules.grid(column=0, row=0, sticky="nsew")
@@ -233,16 +235,18 @@ class PrepareTheState:
             ## Here I have maipulated the player circuit to make the initialize gate appear nicer without changing any of player's circuit
             # First, I separate the CircuitInstruction corresponding to 'initialize' and make a quantumcircuit
             # exclusively for the initial state vector
-            self.qcir_init = QuantumCircuit(self.qcir.num_qubits, name="init")
+            # self.qcir_init = QuantumCircuit(self.qcir.num_qubits, name="init")
             init_list = self.qcir.get_instructions("initialize")
 
             if init_list:
+                print("*")
                 self.qcir_init = self.qcir_init.from_instructions(
                     self.qcir.get_instructions("initialize"),
                     qubits=self.qcir.qubits,
                     name="init",
                 )
             else:
+                print("**")
                 self.qcir_init.initialize(
                     Statevector.from_label("0" * self.qcir.num_qubits)
                 )

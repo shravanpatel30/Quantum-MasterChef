@@ -51,3 +51,4 @@ qc.draw('mpl')
 - Only use `.draw('mpl')` once at the end of your quantum circuit so that the game displays your quantum circuit without problems.
 - To promote some good practices in creating quantum circuits using qiskit, make sure you only use `.initialize()` method to initialize your circuit (this is the best way to initialize the circuit at the start).
 
+So, put on your chef's hat and quantum goggles, and let's start cooking up some quantum states! Are you ready to become the next Quantum MasterChef?
