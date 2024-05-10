@@ -3,7 +3,6 @@
 </p>
 
 
-
 Welcome to Quantum MasterChef, a unique and immersive quantum computing game that combines the excitement of culinary arts with the challenges of quantum mechanics! This game invites players to step into the world of quantum circuits and state preparation, where they'll use their knowledge and creativity to "cook" up quantum states and navigate complex puzzles.
 
 ## What is Quantum MasterChef?
@@ -17,6 +16,8 @@ The game has two modes, easy/practice mode and advanced mode. In easy mode/pract
 This game is not just for fun, it can also be used by someone who wants to teach the concepts of quantum mechanics and qiskit. And to do so, you can change the `statevector_easy` dictionary in the `statevectors.py` file according to the instructions provided and can add custom statevectors for their students.
 
 ## How to run the game?
+This game will only work with `qiskit>=1.0.0`.
+
 1. Clone the GitHub repository by using
 ```commandline
 git clone https://github.com/shravanpatel30/Quantum-Masterchef.git
