@@ -29,7 +29,7 @@ python quantum_masterchef.py
 
 ## How to play the game?
 
-- On the right side panel of game you will be given the initial ingredient (initial statevector) and the final dish (target statevector).
+- On the right side panel of game you will be given the initial ingredient (initial statevector) and the final dish (target statevector). The QSphere plots in the game are interactive, so feel free to rotate them for visual clarity.
 - Write your quantum recipie (quantum circuit) in the textbox provided that will transform the initial ingredient to prepare the final dish.
 - Below is an example of how you can prepare a recipie, this is the answer for the first easy problem:
 ```
